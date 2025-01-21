@@ -1,0 +1,48 @@
+services:
+  api:
+    container_name: api
+    build:
+      context: ./docker
+      target: development
+    env_file: .env
+    volumes:
+      - .:/opt/api
+    ports:
+      - 5001:5001
+    depends_on:
+      - postgres
+    networks:
+      - mevn
+
+  postgres:
+    image: postgres:13.4
+    container_name: postgres
+    env_file: .env
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      # - ./postgres/initdb.d:/docker-entrypoint-initdb.d
+      - postgres_db:/var/lib/postgresql/data
+    networks:
+      - mevn
+
+  adminer:
+    image: adminer
+    container_name: adminer
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    ports:
+      - 8082:8080
+    networks:
+      - mevn
+
+networks:
+  mevn:
+
+volumes:
+  postgres_db:
