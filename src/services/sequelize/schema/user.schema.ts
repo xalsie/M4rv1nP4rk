@@ -69,7 +69,7 @@ export class userSchema {
         allowNull: false,
       },
       role: {
-        type: DataTypes.ENUM("ROLE_USER", "ROLE_STORE_KEEPER", "ROLE_ADMIN", "ROLE_COMPTA"),
+        type: DataTypes.ENUM("ROLE_USER", "ROLE_ADMIN"),
         defaultValue: "ROLE_USER",
       },
       tel: {
@@ -107,10 +107,22 @@ export class userSchema {
     }, {
       sequelize,
       modelName: 'User',
-      timestamps: true
+      timestamps: true,
+      defaultScope: {
+        attributes: {
+          exclude: ['password']
+        },
+        order: [['id', 'ASC']]
+      },
+      scopes: {
+        withPassword: {
+          attributes: {
+            include: ['password']
+          }
+        }
+      }
     });
 
-    // return sequelize.models.User;
     return User;
   }
 }

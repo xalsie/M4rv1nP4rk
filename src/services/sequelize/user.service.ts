@@ -1,83 +1,78 @@
 import {
   Model,
-  InferAttributes,
-  InferCreationAttributes,
   ModelStatic
 } from "sequelize";
 import { User } from "../../models";
 import { SequelizeService } from "./sequelize.service";
 import { userSchema } from "./schema";
 
-// import { AddressService } from "./address.service";
-
-export type CreateUser = Omit<User, "_id" | "createdAt" | "updatedAt">;
-export type UpdateUser = Omit<User, "_id" | "createdAt" | "updatedAt">;
-
-export type IUser = Omit<User, "password">;
+export type CreateUser = Omit<User, "id" | "createdAt" | "updatedAt">;
+export type UpdateUser = Omit<User, "id" | "createdAt" | "updatedAt">;
 
 export class UserService {
   readonly sequelizeService: SequelizeService;
-  // readonly model: Model<InferAttributes<User>, InferCreationAttributes<User>>;
-  readonly model: ModelStatic<Model<any, any>>;
+  readonly model: ModelStatic<Model<User>>;
 
   constructor(sequelizeService: SequelizeService) {
     this.sequelizeService = sequelizeService;
     const sequelize = this.sequelizeService.sequelize;
     const schema = new userSchema(sequelize);
     this.model = sequelize.models.User;
+
+    this.model.sync()
   }
 
-  // // register
-  // async createUser(user: CreateUser): Promise<IUser> {
-  //   const res = await this.model.create(user);
-  //   return res;
-  // }
+  // register
+  async createUser(user: User): Promise<Model<User>> {
+    const res = await this.model.create(user);
+    return res;
+  }
 
-  // // login
-  // async findUser(email: string): Promise<IUser | null> {
-  //   const user = await this.model.findOne({
-  //     email: email,
-  //   });
+  // login
+  async findUser(email: string): Promise<Model<User> | null> {
+    const user = await this.model.scope("withPassword").findOne({
+      where: {
+        email: email,
+      },
+    });
 
-  //   return user;
-  // }
+    return user;
+  }
 
-  // // read one
-  // async findUserById(id: string): Promise<IUser | null> {
-  //   const user = await this.model.findById(id);
+  // read one
+  async findUserById(id: string): Promise<Model<User> | null> {
+    const user = await this.model.findByPk(id);
 
-  //   return user;
-  // }
+    return user;
+  }
 
-  // // read all
-  // async findAllUsers(): Promise<IUser[]> {
-  //   const users = await this.model.find();
+  // read all
+  async findAllUsers(): Promise<Model<User>[]> {
+    const users = await this.model.findAll();
 
-  //   return users;
-  // }
+    return users;
+  }
 
-  // // update
-  // async updateUser(id: string, update: Partial<User>): Promise<IUser | null> {
-  //   return this.model.findByIdAndUpdate(id, update, { new: true });
-  // }
+  // update
+  async updateUser(id: string, update: Partial<User>): Promise<Model<User> | null> {
+    const res = await this.model.update(update, {
+      where: {
+        id: id,
+      },
+      returning: true,
+    });
 
-  // // delete
-  // async deleteUser(id: string): Promise<IUser | null> {
-  //   const res = await this.model.findByIdAndUpdate(
-  //     id,
-  //     {
-  //       $set: {
-  //         name: "Anonyme",
-  //         email: `${id}@deleted.com`,
-  //         password: "deleted",
-  //       }
-  //     },
-  //     {
-  //       new: true,
-  //       runValidators: true,
-  //     }
-  //   );
+    return res[1][0];
+  }
 
-  //   return res;
-  // }
+  // delete
+  async deleteUser(id: string): Promise<number> {
+    const res = await this.model.destroy({
+      where: {
+        id: id,
+      }
+    });
+
+    return res;
+  }
 }

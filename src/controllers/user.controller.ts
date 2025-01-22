@@ -43,7 +43,7 @@ export class UserController {
   async getOneUser(req: Request, res: Response, next: NextFunction) {
     try {
       // if (!req.params.id) {
-      //   res.status(400);
+        res.status(400);
       //   throw new Error("Missing id parameter");
       // }
       // const sequelizeService = await SequelizeService.get();
@@ -55,8 +55,6 @@ export class UserController {
       //   throw new Error("User not found");
       // }
       // res.status(200).json(user);
-      // return;
-      res.status(501).send("Not implemented");
       return;
     } catch (error) {
       if (!res.statusCode) {
@@ -92,15 +90,14 @@ export class UserController {
    */
   async getUsers(req: Request, res: Response, next: NextFunction) {
     try {
-      // const mongooseService = await MongooseService.get();
-      // const users = await mongooseService.userService.findAllUsers();
-      // if (!users) {
-      //   res.status(404);
-      //   throw new Error("Users not found");
-      // }
-      // res.status(200).json(users);
-      // return;
-      res.status(501).send("Not implemented");
+      // const sequelizeService = await SequelizeService.get();
+      const sequelizeService = await SequelizeService.get();
+      const users = await sequelizeService.userService.findAllUsers();
+      if (!users) {
+        res.status(404);
+        throw new Error("Users not found");
+      }
+      res.status(200).json(users);
       return;
     } catch (error) {
       if (!res.statusCode) {
@@ -164,11 +161,11 @@ export class UserController {
   async updateUser(req: Request, res: Response, next: NextFunction) {
     try {
       // if (!req.params.id || !req.body) {
-      //   res.status(400);
+        res.status(400);
       //   throw new Error("Missing id parameter or body");
       // }
-      // const mongooseService = await MongooseService.get();
-      // const user = await mongooseService.userService.updateUser(
+      // const sequelizeService = await SequelizeService.get();
+      // const user = await sequelizeService.userService.updateUser(
       //   req.params.id,
       //   req.body
       // );
@@ -177,8 +174,6 @@ export class UserController {
       //   throw new Error("User not found");
       // }
       // res.status(200).json(user);
-      // return;
-      res.status(501).send("Not implemented");
       return;
     } catch (error) {
       if (!res.statusCode) {
@@ -224,18 +219,16 @@ export class UserController {
   async deleteUser(req: Request, res: Response, next: NextFunction) {
     try {
       // if (!req.params.id) {
-      //   res.status(400);
+        res.status(400);
       //   throw new Error("Missing id parameter");
       // }
-      // const mongooseService = await MongooseService.get();
-      // const user = await mongooseService.userService.deleteUser(req.params.id);
+      // const sequelizeService = await SequelizeService.get();
+      // const user = await sequelizeService.userService.deleteUser(req.params.id);
       // if (!user) {
       //   res.status(404);
       //   throw new Error("User not found");
       // }
       // res.status(200).json(user);
-      // return;
-      res.status(501).send("Not implemented");
       return;
     } catch (error) {
       if (!res.statusCode) {
