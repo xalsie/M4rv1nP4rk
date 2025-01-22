@@ -1,4 +1,4 @@
-import { Schema } from "mongoose";
+import { Sequelize, DataTypes, InferAttributes, InferCreationAttributes, Model } from "sequelize";
 import { User } from "../../../models";
 
 /**
@@ -45,49 +45,72 @@ import { User } from "../../../models";
  *           country: "France"
  */
 
-export const userSchema = new Schema<User>(
-  {
-    name: {
-      type: String,
-    },
-    email: {
-      type: String,
-      unique: true,
-      required: true,
-    },
-    tel: {
-      type: String,
-      unique: true,
-    },
-    password: {
-      type: String,
-      required: true,
-    },
-    role: {
-      type: String,
-      enum: ["ROLE_USER", "ROLE_STORE_KEEPER", "ROLE_ADMIN", "ROLE_COMPTA"],
-      default: "ROLE_USER",
-    },
-    address: {
-      type: Schema.Types.ObjectId,
-      ref: "Address",
-    },
-    isEmailVerified: {
-      type: Boolean,
-      default: false
-    },
-    emailVerificationToken: {
-      type: String,
-      default: null
-    },
-    emailVerificationTokenExpires: {
-      type: Date,
-      default: null
-    }
-  },
-  {
-    timestamps: true,
-    collection: "users",
-    versionKey: false,
+export class userSchema {
+  constructor(sequelize: Sequelize) {
+    User.init({
+      id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
+      },
+      firstName: {
+        type: DataTypes.STRING,
+      },
+      lastName: {
+        type: DataTypes.STRING,
+      },
+      email: {
+        type: DataTypes.STRING,
+        unique: true,
+        allowNull: false,
+      },
+      password: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      role: {
+        type: DataTypes.ENUM("ROLE_USER", "ROLE_STORE_KEEPER", "ROLE_ADMIN", "ROLE_COMPTA"),
+        defaultValue: "ROLE_USER",
+      },
+      tel: {
+        type: DataTypes.STRING,
+        unique: true,
+      },
+      isEmailVerified: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+      },
+      emailVerificationToken: {
+        type: DataTypes.STRING,
+        defaultValue: null
+      },
+      emailVerificationTokenExpires: {
+        type: DataTypes.DATE,
+        defaultValue: null
+      },
+      resetPasswordToken: {
+        type: DataTypes.STRING,
+        defaultValue: null
+      },
+      resetPasswordExpires: {
+        type: DataTypes.DATE,
+        defaultValue: null
+      },
+      createdAt: {
+        type: DataTypes.DATE,
+        defaultValue: new Date()
+      },
+      updatedAt: {
+        type: DataTypes.DATE,
+        defaultValue: new Date()
+      }
+    }, {
+      sequelize,
+      modelName: 'User',
+      timestamps: true
+    });
+
+    // return sequelize.models.User;
+    return User;
   }
-);
+}

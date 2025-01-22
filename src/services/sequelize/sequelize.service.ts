@@ -1,18 +1,18 @@
-import { db_host, db_port, db_driver, db_name, db_user, db_password } from "../../config";
+import { env } from "../../env";
 import { Sequelize, Dialect } from "sequelize";
-// import { UserService } from "./user.service";
+import { UserService } from "./user.service";
 // import { SessionService } from "./session.service";
 
 export class SequelizeService {
   private static instance?: SequelizeService;
 
   readonly sequelize: Sequelize;
-  // readonly userService: UserService;
+  readonly userService: UserService;
   // readonly sessionService: SessionService;
 
   private constructor(sequelize: Sequelize) {
     this.sequelize = sequelize;
-    // this.userService = new UserService(this);
+    this.userService = new UserService(this);
     // this.sessionService = new SessionService(this);
   }
 
@@ -26,10 +26,10 @@ export class SequelizeService {
   }
 
   private static async openConnection(): Promise<Sequelize> {
-    const connection = new Sequelize(db_name, db_user, db_password, {
-      host: db_host,
-      port: db_port,
-      dialect: db_driver as Dialect
+    const connection = new Sequelize(env.DB_NAME, env.DB_USER, env.DB_PASSWORD, {
+      host: env.DB_HOST,
+      port: env.DB_PORT,
+      dialect: env.DB_DRIVER as Dialect,
     });
 
     return connection;
