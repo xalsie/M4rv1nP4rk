@@ -35,7 +35,7 @@ const errorHandler = (logger: Logger) => {
 
     res.status(statusCode).json({
       message: err.message,
-      ...(process.env.MODE_ENV === "production" ? null : { stack: err.stack }),
+      ...(process.env.NODE_ENV === "production" ? null : { stack: err.stack }),
     });
   };
 };

@@ -6,7 +6,7 @@ import "winston-daily-rotate-file";
 config();
 
 // Set the log level based on the environment
-const level = process.env.MODE_ENV === "development" ? "debug" : "info";
+const level = process.env.NODE_ENV === "development" ? "debug" : "info";
 
 interface Logger {
   error: (message: string) => void;

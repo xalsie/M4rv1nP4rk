@@ -6,7 +6,7 @@ import {
   validateRoleAdminOrUserId,
   validateUserId,
 } from "../middlewares/validator/validateRole";
-import { MongooseService } from "../services/sequelize/sequelize.service";
+import { SequelizeService } from "../services/sequelize/sequelize.service";
 
 export class UserController {
   /**
@@ -42,19 +42,21 @@ export class UserController {
    */
   async getOneUser(req: Request, res: Response, next: NextFunction) {
     try {
-      if (!req.params.id) {
-        res.status(400);
-        throw new Error("Missing id parameter");
-      }
-      const mongooseService = await MongooseService.get();
-      const user = await mongooseService.userService.findUserById(
-        req.params.id
-      );
-      if (!user) {
-        res.status(404);
-        throw new Error("User not found");
-      }
-      res.status(200).json(user);
+      // if (!req.params.id) {
+      //   res.status(400);
+      //   throw new Error("Missing id parameter");
+      // }
+      // const sequelizeService = await SequelizeService.get();
+      // const user = await sequelizeService.userService.findUserById(
+      //   req.params.id
+      // );
+      // if (!user) {
+      //   res.status(404);
+      //   throw new Error("User not found");
+      // }
+      // res.status(200).json(user);
+      // return;
+      res.status(501).send("Not implemented");
       return;
     } catch (error) {
       if (!res.statusCode) {
@@ -90,13 +92,15 @@ export class UserController {
    */
   async getUsers(req: Request, res: Response, next: NextFunction) {
     try {
-      const mongooseService = await MongooseService.get();
-      const users = await mongooseService.userService.findAllUsers();
-      if (!users) {
-        res.status(404);
-        throw new Error("Users not found");
-      }
-      res.status(200).json(users);
+      // const mongooseService = await MongooseService.get();
+      // const users = await mongooseService.userService.findAllUsers();
+      // if (!users) {
+      //   res.status(404);
+      //   throw new Error("Users not found");
+      // }
+      // res.status(200).json(users);
+      // return;
+      res.status(501).send("Not implemented");
       return;
     } catch (error) {
       if (!res.statusCode) {
@@ -109,7 +113,6 @@ export class UserController {
   /**
    * @swagger
    * /api/users/{id}:
-   *   FIXME:
    *   put:
    *     summary: Update user by ID
    *     tags: [Users]
@@ -125,7 +128,6 @@ export class UserController {
    *       content:
    *         application/json:
    *           schema:
-   *            FIXME:
    *             type: object
    *             properties:
    *               name:
@@ -161,20 +163,22 @@ export class UserController {
    */
   async updateUser(req: Request, res: Response, next: NextFunction) {
     try {
-      if (!req.params.id || !req.body) {
-        res.status(400);
-        throw new Error("Missing id parameter or body");
-      }
-      const mongooseService = await MongooseService.get();
-      const user = await mongooseService.userService.updateUser(
-        req.params.id,
-        req.body
-      );
-      if (!user) {
-        res.status(404);
-        throw new Error("User not found");
-      }
-      res.status(200).json(user);
+      // if (!req.params.id || !req.body) {
+      //   res.status(400);
+      //   throw new Error("Missing id parameter or body");
+      // }
+      // const mongooseService = await MongooseService.get();
+      // const user = await mongooseService.userService.updateUser(
+      //   req.params.id,
+      //   req.body
+      // );
+      // if (!user) {
+      //   res.status(404);
+      //   throw new Error("User not found");
+      // }
+      // res.status(200).json(user);
+      // return;
+      res.status(501).send("Not implemented");
       return;
     } catch (error) {
       if (!res.statusCode) {
@@ -219,70 +223,20 @@ export class UserController {
    */
   async deleteUser(req: Request, res: Response, next: NextFunction) {
     try {
-      if (!req.params.id) {
-        res.status(400);
-        throw new Error("Missing id parameter");
-      }
-      const mongooseService = await MongooseService.get();
-      const user = await mongooseService.userService.deleteUser(req.params.id);
-      if (!user) {
-        res.status(404);
-        throw new Error("User not found");
-      }
-      res.status(200).json(user);
+      // if (!req.params.id) {
+      //   res.status(400);
+      //   throw new Error("Missing id parameter");
+      // }
+      // const mongooseService = await MongooseService.get();
+      // const user = await mongooseService.userService.deleteUser(req.params.id);
+      // if (!user) {
+      //   res.status(404);
+      //   throw new Error("User not found");
+      // }
+      // res.status(200).json(user);
+      // return;
+      res.status(501).send("Not implemented");
       return;
-    } catch (error) {
-      if (!res.statusCode) {
-        res.status(500);
-      }
-      next(error);
-    }
-  }
-
-  /**
-   * @swagger
-   * /api/users/countUsersByMonth:
-   *   get:
-   *     summary: Compter le nombre d'utilisateurs par mois
-   *     tags: [Users]
-   *     description: Cette route retourne le nombre d'utilisateurs enregistrés pour le mois en cours, le mois précédent, et le taux de croissance d'enregistrement des utilisateurs.
-   *     responses:
-   *       200:
-   *         description: Commandes trouvées avec succès.
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: object
-   *               properties:
-   *                 currentMonthUser:
-   *                   type: integer
-   *                   description: Nombre d'utilisateurs enregistrés pour le mois en cours.
-   *                   example: 250
-   *                 lastMonthUser:
-   *                   type: integer
-   *                   description:  Nombre d'utilisateurs enregistrés pour le mois précédent.
-   *                   example: 200
-   *                 growthRateUser:
-   *                   type: number
-   *                   format: float
-   *                   description: Taux de croissance des utilisateurs enregistrés entre le mois précédent et le mois en cours (en pourcentage).
-   *                   example: 25.0
-   *       400:
-   *         description: Requête invalide.
-   *       401:
-   *         description: Non autorisé.
-   *       403:
-   *         description: Accès refusé.
-   *       404:
-   *         description: Commandes non trouvées.
-   *       500:
-   *         description: Erreur interne du serveur.
-   */
-  async countUsersByMonth(req: Request, res: Response, next: NextFunction) {
-    try {
-      const mongooseService = await MongooseService.get();
-      const count = await mongooseService.userService.countUsersByMonth();
-      res.status(200).json(count);
     } catch (error) {
       if (!res.statusCode) {
         res.status(500);
@@ -293,34 +247,32 @@ export class UserController {
 
   buildRouter(): Router {
     const router = Router();
-    router.get("/countUsersByMonth", this.countUsersByMonth.bind(this));
-    router.get(
-      "/:id",
-      authenticateToken,
-      validateUserId,
-      this.getOneUser.bind(this)
-    );
+    // router.get(
+    //   "/:id",
+    //   authenticateToken,
+    //   validateUserId,
+    //   this.getOneUser.bind(this)
+    // );
     router.get(
       "/",
-      authenticateToken,
-      validateRoleAdmin,
+      // authenticateToken,
+      // validateRoleAdmin,
       this.getUsers.bind(this)
     );
-    router.put(
-      "/:id",
-      authenticateToken,
-      validateRoleAdminOrUserId,
-      validateObjectId,
-      this.updateUser.bind(this)
-    );
-    router.delete(
-      "/:id",
-      authenticateToken,
-      validateRoleAdminOrUserId,
-      validateObjectId,
-      this.deleteUser.bind(this)
-    );
-    router.get("/countUsersByMonth", authenticateToken, validateRoleAdmin, this.countUsersByMonth.bind(this));
+    // router.put(
+    //   "/:id",
+    //   authenticateToken,
+    //   validateRoleAdminOrUserId,
+    //   validateObjectId,
+    //   this.updateUser.bind(this)
+    // );
+    // router.delete(
+    //   "/:id",
+    //   authenticateToken,
+    //   validateRoleAdminOrUserId,
+    //   validateObjectId,
+    //   this.deleteUser.bind(this)
+    // );
     return router;
   }
 }
