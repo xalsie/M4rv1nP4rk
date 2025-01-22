@@ -1,7 +1,6 @@
-import { config } from "dotenv";
+import { env } from "../env";
 import swaggerJsdoc from "swagger-jsdoc";
 
-config();
 interface SwaggerOptions {
   definition: {
     openapi: string;
@@ -28,16 +27,16 @@ interface SwaggerOptions {
   apis: string[];
 }
 
-const hostname: string = process.env.API_HOST || "localhost";
-const port: string | number = process.env.API_PORT || 5000;
+const hostname: string = env.API_HOST
+const port: number = env.API_PORT
 
 const swaggerOptions: SwaggerOptions = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "E-commerce API",
-      version: "0.1.0",
-      description: "E-commerce API documentation",
+      title: "API GYM",
+      version: "1.0.0",
+      description: "API documentation",
     },
     components: {
       securitySchemes: {
@@ -53,7 +52,7 @@ const swaggerOptions: SwaggerOptions = {
     }],
     servers: [
       {
-        url: `http://${hostname || "localhost"}:${port || 5000}`,
+        url: `http://${hostname}:${port}`,
         description: "Development server",
       },
     ],
