@@ -5,11 +5,9 @@ dotenv.config()
 
 const envSchema = z.object({
     NODE_ENV: z.enum(["development", "production"]).default("development"),
-    // API_PORT: z.string().default("5001"),
     API_PORT: z.coerce.number().default(5001),
     API_HOST: z.string().default("localhost"),
     DB_HOST: z.string().default("postgres"),
-    // DB_PORT: z.string().default("5432"),
     DB_PORT: z.coerce.number().default(5432),
     DB_DRIVER: z.string().default("postgres"),
     DB_NAME: z.string().default("mypg"),

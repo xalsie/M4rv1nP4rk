@@ -1,87 +1,51 @@
-import { MongooseService } from "./sequelize.service";
-import { Model, isValidObjectId } from "mongoose";
-import { sessionSchema } from "./schema/session.schema";
+import { Model, ModelStatic } from "sequelize";
+import { SequelizeService } from "./sequelize.service";
 import { Session } from "../../models";
-
-export type CreateSession = Omit<Session, '_id' | 'createdAt' | 'updatedAt'>;
+import { sessionSchema } from "./schema";
+import { z } from "zod";
 
 export class SessionService {
+    readonly sequelizeService: SequelizeService;
+    readonly model: ModelStatic<Model<Session>>;
 
-  readonly mongooseService: MongooseService;
-  readonly model: Model<Session>;
+    constructor(sequelizeService: SequelizeService) {
+        this.sequelizeService = sequelizeService;
+        const sequelize = this.sequelizeService.sequelize;
+        const schema = new sessionSchema(sequelize);
+        this.model = sequelize.models.User;
 
-  constructor(mongooseService: MongooseService) {
-    this.mongooseService = mongooseService;
-    const mongoose = this.mongooseService.mongoose; // recuperation de la connexion
-    this.model = mongoose.model('Session', sessionSchema); // creation du model sur la connexion avec le schema
-  }
-
-  async createSession(session: CreateSession): Promise<Session> {
-    const res = await this.model.create(session);
-    return res;
-  }
-
-  async findActiveSession(id: string): Promise<Session | null> {
-    if (!isValidObjectId(id)) {
-      return null;
+        this.model.sync()
     }
-    const res = await this.model.findOne({
-      _id: id,
-      $or: [
-        { expirationDate: { $exists: false } },
-        { expirationDate: { $gt: Date.now() } }
-      ]
-    }).populate('user'); // populate permet de charger un objet d'une autre collection
-    return res;
-  }
 
-  async increaseExpirationDate(id: string): Promise<Session | null> {
-    if (!isValidObjectId(id)) {
-      return null;
+    async createSession(session: Session): Promise<Model<Session>> {
+        const res = await this.model.create(session);
+        return res;
     }
-    const res = await this.model.findOneAndUpdate({
-      _id: id
-    }, {
-      expirationDate: new Date((new Date().getTime()) + 1_296_000_000)
-    }, {
-      new: true // option new -> true permet de recuperer l'objet modifié.
-    }).populate('user');
-    return res;
-  }
 
-  // stat
-  async countSessionByMonth(): Promise<{ currentMonthSession: number; lastMonthSession: number; growthRateSession: number }> {
-    const date = new Date();
+    async findActiveSession(id: string): Promise<Model<Session> | null> {
+        const res = await this.model.findOne({
+            where: {
+                id: id,
+                expirationDate: {
+                    $gt: new Date()
+                }
+            },
+            include: "user"
+        })
 
-    const currentMonthSession = date.getMonth();
-    const currentYear = date.getFullYear();
-    const lastMonthUser = currentMonthSession === 0 ? 11 : currentMonthSession - 1;
-    const lastYear = currentMonthSession === 0 ? currentYear - 1 : currentYear;
+        return res;
+    }
 
-    const currentMonthSessions = await this.model.countDocuments({
-      createdAt: {
-        $gte: new Date(currentYear, currentMonthSession, 1),
-        $lt: new Date(currentYear, currentMonthSession + 1, 1),
-      },
-    });
+    async increaseExpirationDate(id: number): Promise<[affectedCount: number, affectedRows: Model<Session, Session>[]] | null> {
+        const res = await this.model.update({
+            expirationDate: new Date((new Date().getTime()) + 1_296_000_000)
+        }, {
+            where: {
+                id: id
+            },
+            returning: true
+        });
 
-    const lastMonthSessions = await this.model.countDocuments({
-      createdAt: {
-        $gte: new Date(lastYear, lastMonthUser, 1),
-        $lt: new Date(lastYear, lastMonthUser + 1, 1),
-      },
-    });
-
-    const growthRateSession = lastMonthSessions > 0
-      ? ((currentMonthSessions - lastMonthSessions) / lastMonthSessions) * 100
-      : currentMonthSessions > 0
-        ? 100
-        : 0;
-
-    return {
-      currentMonthSession: currentMonthSessions,
-      lastMonthSession: lastMonthSessions,
-      growthRateSession: parseFloat(growthRateSession.toFixed(2)),
-    };
-  }
+        return res;
+    }
 }

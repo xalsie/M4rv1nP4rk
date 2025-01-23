@@ -1,4 +1,5 @@
 import cors from 'cors';
+import { env } from '../env';
 import { Application } from 'express';
 import logger from './logger';
 
@@ -10,12 +11,7 @@ const configureCORS = (app: Application) => {
         return;
       }
 
-      const allowedOrigins = process.env.ALLOWED_ORIGINS;
-      if (!allowedOrigins) {
-        callback(new Error("Request from unauthorized origin"));
-        return;
-      }
-
+      const allowedOrigins = env.ALLOWED_ORIGINS;
       const origins = allowedOrigins.split(" ");
       if (origins.indexOf(origin) !== -1) {
         callback(null, true);

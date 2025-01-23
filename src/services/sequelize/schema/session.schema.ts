@@ -1,5 +1,5 @@
-import { Schema } from "mongoose";
-import { Session } from "../../../models";
+import { Sequelize, DataTypes } from "sequelize";
+import { User, Session } from "../../../models";
 
 /**
  * @swagger
@@ -26,24 +26,50 @@ import { Session } from "../../../models";
  *         user: 5f4f6d7e5e5c5b5a5a4a5a5a5a
  */
 
-export const sessionSchema = new Schema<Session>(
-  {
-    expirationDate: {
-      type: Date,
-    },
-    userAgent: {
-      type: String,
-      required: true,
-    },
-    user: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-  },
-  {
-    timestamps: true,
-    collection: "sessions",
-    versionKey: false,
+export class sessionSchema {
+  constructor(sequelize: Sequelize) {
+    Session.init({
+      id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
+      },
+      expirationDate: {
+        type: DataTypes.DATE,
+      },
+      userAgent: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      user: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      createdAt: {
+        type: DataTypes.DATE,
+        defaultValue: new Date()
+      },
+      updatedAt: {
+        type: DataTypes.DATE,
+        defaultValue: new Date()
+      }
+    }, {
+      sequelize,
+      modelName: "Session",
+      timestamps: true,
+      underscored: true
+    });
+
+    Session.belongsTo(User, {
+      foreignKey: "user",
+      targetKey: "id",
+      as: "user",
+    });
+
+    Session.sync().then(() => {
+      console.log("Table des sessions synchronisée");
+    });
+
+    return Session;
   }
-);
+}

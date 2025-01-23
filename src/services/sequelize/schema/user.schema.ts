@@ -1,5 +1,5 @@
-import { Sequelize, DataTypes, InferAttributes, InferCreationAttributes, Model } from "sequelize";
-import { User } from "../../../models";
+import { Sequelize, DataTypes } from "sequelize";
+import { User, Session } from "../../../models";
 
 /**
  * @swagger
@@ -28,21 +28,12 @@ import { User } from "../../../models";
  *           enum: [ROLE_USER, ROLE_STORE_KEEPER, ROLE_ADMIN, ROLE_COMPTA]
  *           default: ROLE_USER
  *           description: Le rôle de l'utilisateur
- *         address:
- *           $ref: '#/components/schemas/Address'
- *           description: L'adresse de l'utilisateur
  *       example:
  *         name: John Doe
  *         email: john.doe@toto.com
  *         tel: 0102030405
  *         password: password
  *         role: ROLE_USER
- *         address:
- *           userId: "643d0fd5c07b4a2e88b074c9"
- *           street: "123 Rue de Paris"
- *           city: "Paris"
- *           postalCode: "75000"
- *           country: "France"
  */
 
 export class userSchema {
@@ -51,7 +42,7 @@ export class userSchema {
       id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
-        primaryKey: true,
+        primaryKey: true
       },
       firstName: {
         type: DataTypes.STRING,
@@ -121,6 +112,14 @@ export class userSchema {
           }
         }
       }
+    });
+
+    // User.hasMany(Session, {
+    //   foreignKey: 'user'
+    // });
+
+    User.sync().then(() => {
+      console.log('Table des utilisateurs synchronisée');
     });
 
     return User;

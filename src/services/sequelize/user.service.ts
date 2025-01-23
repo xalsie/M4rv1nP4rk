@@ -1,78 +1,102 @@
-import {
-  Model,
-  ModelStatic
-} from "sequelize";
-import { User } from "../../models";
+import { Model, ModelStatic, InferAttributes, InferCreationAttributes } from "sequelize";
 import { SequelizeService } from "./sequelize.service";
+import { User, UserCreation } from "../../models";
 import { userSchema } from "./schema";
 
-export type CreateUser = Omit<User, "id" | "createdAt" | "updatedAt">;
-export type UpdateUser = Omit<User, "id" | "createdAt" | "updatedAt">;
-
 export class UserService {
-  readonly sequelizeService: SequelizeService;
-  readonly model: ModelStatic<Model<User>>;
+    readonly sequelizeService: SequelizeService;
+    readonly model: ModelStatic<Model<User, UserCreation>>;
 
-  constructor(sequelizeService: SequelizeService) {
-    this.sequelizeService = sequelizeService;
-    const sequelize = this.sequelizeService.sequelize;
-    const schema = new userSchema(sequelize);
-    this.model = sequelize.models.User;
+    constructor(sequelizeService: SequelizeService) {
+        this.sequelizeService = sequelizeService;
+        const sequelize = this.sequelizeService.sequelize;
+        const schema = new userSchema(sequelize);
+        this.model = sequelize.models.User;
 
-    this.model.sync()
-  }
+        this.model.sync()
+    }
 
-  // register
-  async createUser(user: User): Promise<Model<User>> {
-    const res = await this.model.create(user);
-    return res;
-  }
+    // register
+    async createUser(user: UserCreation): Promise<User> {
+        const res = await this.model.create(user, {
+            returning: true
+        });
 
-  // login
-  async findUser(email: string): Promise<Model<User> | null> {
-    const user = await this.model.scope("withPassword").findOne({
-      where: {
-        email: email,
-      },
-    });
+        return res.dataValues;
+    }
 
-    return user;
-  }
+    // login
+    async findUser(email: string): Promise<User | null> {
+        const user = await this.model.scope("withPassword").findOne({
+            where: {
+                email: email,
+            }
+        });
 
-  // read one
-  async findUserById(id: string): Promise<Model<User> | null> {
-    const user = await this.model.findByPk(id);
+        return user?.dataValues || null;
+    }
 
-    return user;
-  }
+    // read one
+    async findUserById(id: string): Promise<User | null> {
+        const user = await this.model.findByPk(id);
 
-  // read all
-  async findAllUsers(): Promise<Model<User>[]> {
-    const users = await this.model.findAll();
+        return user?.dataValues || null;
+    }
 
-    return users;
-  }
+    // read all
+    async findAllUsers(): Promise<User[]> {
+        const users = await this.model.findAll();
 
-  // update
-  async updateUser(id: string, update: Partial<User>): Promise<Model<User> | null> {
-    const res = await this.model.update(update, {
-      where: {
-        id: id,
-      },
-      returning: true,
-    });
+        return users.map(user => user.dataValues);
+    }
 
-    return res[1][0];
-  }
+    // update
+    async updateUser(id: number, update: Partial<User>): Promise<User | null> {
+        const res = await this.model.update(update, {
+            where: {
+                id: id,
+            },
+            returning: true,
+        });
 
-  // delete
-  async deleteUser(id: string): Promise<number> {
-    const res = await this.model.destroy({
-      where: {
-        id: id,
-      }
-    });
+        return res.length ? res[1][0].dataValues : null;
+    }
 
-    return res;
-  }
+    // delete
+    async deleteUser(id: number): Promise<number> {
+        const res = await this.model.destroy({
+            where: {
+                id: id,
+            }
+        });
+
+        return res;
+    }
+
+    // verify email
+    async findUserByVerificationToken(token: string): Promise<User | null> {
+        const user = await this.model.findOne({
+            where: {
+                emailVerificationToken: token,
+                emailVerificationTokenExpires: {
+                    $gt: new Date()
+                }
+            }
+        });
+
+        return user?.dataValues || null;
+    }
+
+    async findUserByResetToken(token: string): Promise<User | null> {
+        const user = await this.model.findOne({
+            where: {
+                resetPasswordToken: token,
+                resetPasswordExpires: {
+                    $gt: new Date()
+                }
+            }
+        });
+
+        return user?.dataValues || null;
+    }
 }
