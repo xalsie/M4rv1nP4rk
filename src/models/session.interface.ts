@@ -1,11 +1,22 @@
-import { CreationOptional, InferAttributes, InferCreationAttributes, Model } from "sequelize";
+import { Optional, CreationOptional, InferAttributes, InferCreationAttributes, Model } from "sequelize";
 import { User } from "./user.interface";
 
-export class Session extends Model<InferAttributes<Session>, InferCreationAttributes<Session>> {
-    declare id: CreationOptional<number>;
+export interface ISession {
+    id: number;
+    expirationDate: Date | null;
+    userAgent: string;
+    user: string | User;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+export type SessionCreation = Omit<ISession, 'id' | 'createdAt' | 'updatedAt'>;
+
+export class Session extends Model<ISession, SessionCreation> {
+    declare id: number;
     declare expirationDate: Date | null;
     declare userAgent: string;
     declare user: string | User;
-    declare createdAt: CreationOptional<Date>;
-    declare updatedAt: CreationOptional<Date>;
+    declare createdAt: Date;
+    declare updatedAt: Date;
 }

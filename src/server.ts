@@ -14,7 +14,7 @@ import errorHandler from "./middlewares/errorHandler";
 // Routes
 import {
     Swagger,
-    //   AuthController,
+    AuthController,
     UserController
 } from "./controllers";
 
@@ -52,8 +52,8 @@ app.get("/", (req: Request, res: Response) => {
 const swagger = new Swagger();
 app.use("/api", swagger.buildRouter());
 
-// const authController = new AuthController();
-// app.use("/api/auth", authController.buildRouter());
+const authController = new AuthController();
+app.use("/api/auth", authController.buildRouter());
 
 const userController = new UserController();
 app.use("/api/users", userController.buildRouter());

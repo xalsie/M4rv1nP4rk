@@ -4,11 +4,8 @@ import { sessionMiddleware } from "../middlewares/session.middleware";
 import validateCreateUser from "../middlewares/validator/validateUser";
 import { Bcrypt, generateResetToken } from "../utils";
 import { mailService } from "../services/mail.service";
-// import { findUser, findUserByVerificationToken, findUserByResetToken, updateUser, createUser } from "../models/user.interface";
 
 import { SequelizeService } from "../services/sequelize";
-
-// zod
 import { z } from "zod";
 
 export class AuthController {

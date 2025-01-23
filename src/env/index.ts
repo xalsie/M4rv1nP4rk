@@ -14,6 +14,7 @@ const envSchema = z.object({
     DB_USER: z.string().default("myuser"),
     DB_PASSWORD: z.string().default("myPas$w0rd"),
     ALLOWED_ORIGINS: z.string().default("*"),
+    SECRET_KEY: z.string()
 });
 
 const _env = envSchema.safeParse(process.env);

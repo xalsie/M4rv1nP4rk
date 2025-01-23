@@ -42,8 +42,12 @@ export class sessionSchema {
         allowNull: false,
       },
       user: {
-        type: DataTypes.STRING,
+        type: DataTypes.INTEGER,
         allowNull: false,
+        references: {
+          model: User,
+          key: "id",
+        }
       },
       createdAt: {
         type: DataTypes.DATE,
@@ -62,8 +66,7 @@ export class sessionSchema {
 
     Session.belongsTo(User, {
       foreignKey: "user",
-      targetKey: "id",
-      as: "user",
+      targetKey: "id"
     });
 
     Session.sync().then(() => {

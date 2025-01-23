@@ -2,9 +2,7 @@ import { NextFunction, Request, Response, Router } from "express";
 import { authenticateToken } from "../middlewares/jwt";
 import { validateObjectId } from "../middlewares/validate";
 import {
-  validateRoleAdmin,
-  validateRoleAdminOrUserId,
-  validateUserId,
+  validateRole
 } from "../middlewares/validator/validateRole";
 import { SequelizeService } from "../services/sequelize/sequelize.service";
 
@@ -240,32 +238,32 @@ export class UserController {
 
   buildRouter(): Router {
     const router = Router();
-    // router.get(
-    //   "/:id",
-    //   authenticateToken,
-    //   validateUserId,
-    //   this.getOneUser.bind(this)
-    // );
+    router.get(
+      "/:id",
+      authenticateToken,
+      validateRole.bind(["ROLE_ADMIN"]),
+      this.getOneUser.bind(this)
+    );
     router.get(
       "/",
-      // authenticateToken,
-      // validateRoleAdmin,
+      authenticateToken,
+      validateRole.bind(["ROLE_ADMIN"]),
       this.getUsers.bind(this)
     );
-    // router.put(
-    //   "/:id",
-    //   authenticateToken,
-    //   validateRoleAdminOrUserId,
-    //   validateObjectId,
-    //   this.updateUser.bind(this)
-    // );
-    // router.delete(
-    //   "/:id",
-    //   authenticateToken,
-    //   validateRoleAdminOrUserId,
-    //   validateObjectId,
-    //   this.deleteUser.bind(this)
-    // );
+    router.put(
+      "/:id",
+      authenticateToken,
+      validateRole.bind(["ROLE_ADMIN", "ROLE_USER"]),
+      validateObjectId,
+      this.updateUser.bind(this)
+    );
+    router.delete(
+      "/:id",
+      authenticateToken,
+      validateRole.bind(["ROLE_ADMIN", "ROLE_USER"]),
+      validateObjectId,
+      this.deleteUser.bind(this)
+    );
     return router;
   }
 }

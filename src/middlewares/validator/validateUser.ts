@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { body, validationResult } from "express-validator";
-import { findUser } from "../../models/user.interface";
+import { SequelizeService } from "../../services/sequelize/sequelize.service";
 
 const validateCreateUser = [
   body("email")
@@ -30,7 +30,10 @@ const validateCreateUser = [
 
     if (req.path === '/login') {
       const { email } = req.body;
-      const user = await findUser(email);
+
+      const sequelizeService = await SequelizeService.get();
+
+      const user = await sequelizeService.userService.findUser(email);
       
       if (user && !user.isEmailVerified) {
         res.status(401).json({ 

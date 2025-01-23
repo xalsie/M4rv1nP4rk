@@ -115,7 +115,8 @@ export class userSchema {
     });
 
     // User.hasMany(Session, {
-    //   foreignKey: 'user'
+    //   foreignKey: 'user',
+    //   sourceKey: 'id'
     // });
 
     User.sync().then(() => {

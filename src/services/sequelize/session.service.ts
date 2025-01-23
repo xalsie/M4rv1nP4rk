@@ -1,12 +1,12 @@
 import { Model, ModelStatic } from "sequelize";
 import { SequelizeService } from "./sequelize.service";
-import { Session } from "../../models";
+import { Session, SessionCreation } from "../../models";
 import { sessionSchema } from "./schema";
 import { z } from "zod";
 
 export class SessionService {
     readonly sequelizeService: SequelizeService;
-    readonly model: ModelStatic<Model<Session>>;
+    readonly model: ModelStatic<Model<Session, SessionCreation>>;
 
     constructor(sequelizeService: SequelizeService) {
         this.sequelizeService = sequelizeService;
@@ -17,12 +17,12 @@ export class SessionService {
         this.model.sync()
     }
 
-    async createSession(session: Session): Promise<Model<Session>> {
+    async createSession(session: Session): Promise<Session> {
         const res = await this.model.create(session);
-        return res;
+        return res.dataValues
     }
 
-    async findActiveSession(id: string): Promise<Model<Session> | null> {
+    async findActiveSession(id: string): Promise<Session | null> {
         const res = await this.model.findOne({
             where: {
                 id: id,
@@ -33,10 +33,10 @@ export class SessionService {
             include: "user"
         })
 
-        return res;
+        return res?.dataValues || null;
     }
 
-    async increaseExpirationDate(id: number): Promise<[affectedCount: number, affectedRows: Model<Session, Session>[]] | null> {
+    async increaseExpirationDate(id: number): Promise<Session | null> {
         const res = await this.model.update({
             expirationDate: new Date((new Date().getTime()) + 1_296_000_000)
         }, {
@@ -46,6 +46,6 @@ export class SessionService {
             returning: true
         });
 
-        return res;
+        return res ? res[1][0].dataValues : null;
     }
 }

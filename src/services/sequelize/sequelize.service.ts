@@ -1,19 +1,19 @@
 import { env } from "../../env";
 import { Sequelize, Dialect } from "sequelize";
 import { UserService } from "./user.service";
-// import { SessionService } from "./session.service";
+import { SessionService } from "./session.service";
 
 export class SequelizeService {
   private static instance?: SequelizeService;
 
   readonly sequelize: Sequelize;
   readonly userService: UserService;
-  // readonly sessionService: SessionService;
+  readonly sessionService: SessionService;
 
   private constructor(sequelize: Sequelize) {
     this.sequelize = sequelize;
     this.userService = new UserService(this);
-    // this.sessionService = new SessionService(this);
+    this.sessionService = new SessionService(this);
   }
 
   public static async get(): Promise<SequelizeService> {

@@ -1,6 +1,6 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
 import { Session } from "../models";
-import { MongooseService } from "../services/sequelize/sequelize.service";
+import { SequelizeService } from "../services/sequelize/sequelize.service";
 
 declare module "express" {
   interface Request {
@@ -26,16 +26,15 @@ export function sessionMiddleware(): RequestHandler {
         throw new Error("Unauthorized");
       }
       const token = authorizationSplit[1];
-      const mongooseService = await MongooseService.get();
-      let session =
-        await mongooseService.sessionService.findActiveSession(token);
+      const sequelizeService = await SequelizeService.get();
+      let session = await sequelizeService.sessionService.findActiveSession(token)
       if (session === null) {
         res.status(401);
         throw new Error("Unauthorized");
       }
       if (session.expirationDate) {
-        session = await mongooseService.sessionService.increaseExpirationDate(
-          session._id
+        session = await sequelizeService.sessionService.increaseExpirationDate(
+          session.id
         );
       }
       req.session = session === null ? undefined : session;

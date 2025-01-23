@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import mongoose from "mongoose";
-import { MongooseService } from "../../services/sequelize";
+import { SequelizeService } from "../../services/sequelize/sequelize.service";
 
 const SECRET_KEY: string | undefined = process.env.SECRET_KEY;
 
@@ -21,8 +20,8 @@ const getUser = async (req: Request, res: Response) => {
 
   const decoded = jwt.verify(jwtToken, SECRET_KEY) as jwt.JwtPayload;
 
-  const mongooseService = await MongooseService.get();
-  const user = await mongooseService.userService.findUserById(decoded.id);
+  const sequelizeService = await SequelizeService.get();
+  const user = await sequelizeService.userService.findUserById(decoded.id);
   if (!user) {
     res.status(401);
     throw new Error("Authentication failed");
@@ -30,95 +29,10 @@ const getUser = async (req: Request, res: Response) => {
   return user;
 };
 
-const validateRoleAdmin = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const validateRole = async (role: string[], req: Request, res: Response, next: NextFunction) => {
   try {
     const user = await getUser(req, res);
-    if (user.role !== "ROLE_ADMIN") {
-      res.status(403);
-      throw new Error("You are not authorized to access this route");
-    }
-    next();
-  } catch (error) {
-    next(error);
-  }
-};
-
-const validateRoleUser = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const user = await getUser(req, res);
-    if (user.role !== "ROLE_USER") {
-      res.status(403);
-      throw new Error("You are not authorized to access this route");
-    }
-    next();
-  } catch (error) {
-    next(error);
-  }
-};
-
-const validateRoleAdminOrUser = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const user = await getUser(req, res);
-    if (user.role !== "ROLE_ADMIN") {
-      if (user.role !== "ROLE_USER") {
-        res.status(403);
-        throw new Error("You are not authorized to access this route");
-      }
-    }
-    next();
-  } catch (error) {
-    next(error);
-  }
-};
-
-const validateUserId = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const userId = req.params.userId || req.body.userId || req.params.id;
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
-      res.status(401);
-      throw new Error("Invalid ID format");
-    }
-    const user = await getUser(req, res);
-    if (user._id.toString() !== userId) {
-      res.status(403);
-      throw new Error("You are not authorized to access this route");
-    }
-    next();
-  } catch (error) {
-    next(error);
-  }
-};
-
-const validateRoleAdminOrUserId = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const userId = req.params.id || req.body.userId;
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
-      res.status(401);
-      throw new Error("Invalid ID format");
-    }
-
-    const user = await getUser(req, res);
-    if (user.role !== "ROLE_ADMIN") {
+    if (!role.includes(user.role)) {
       res.status(403);
       throw new Error("You are not authorized to access this route");
     }
@@ -129,9 +43,5 @@ const validateRoleAdminOrUserId = async (
 };
 
 export {
-  validateRoleAdmin,
-  validateRoleAdminOrUser,
-  validateRoleAdminOrUserId,
-  validateRoleUser,
-  validateUserId,
+  validateRole
 };
