@@ -6,7 +6,7 @@ import { Bcrypt, generateResetToken } from "../utils";
 import { mailService } from "../services/mail.service";
 
 import { SequelizeService } from "../services/sequelize";
-import { z } from "zod";
+import { z, ZodError } from "zod"
 
 export class AuthController {
     /**
@@ -63,15 +63,15 @@ export class AuthController {
      *         description: Server error
      */
     register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        const UserSchema = z.object({
+            firstname: z.string().trim().min(3).max(50),
+            lastname: z.string().trim().min(3).max(50),
+            email: z.string().email(),
+            tel: z.string().optional(),
+            password: z.string()
+        })
         try {
-            if (!req.body ||
-                z.object({
-                    firstname: z.string(),
-                    lastname: z.string(),
-                    email: z.string(),
-                    tel: z.string().optional(),
-                    password: z.string()
-                }).safeParse(req.body).success === false) {
+            if (!req.body || UserSchema.parse(req.body)) {
                 res.status(400).json({
                     message: "firstname, lastname, email and password are required"
                 });
@@ -115,6 +115,14 @@ export class AuthController {
                 message: "Un email de confirmation vous a été envoyé"
             });
         } catch (error) {
+            if (error instanceof ZodError) {
+                res.status(400).json({
+                    message: "Invalid data",
+                    errors: error.errors
+                });
+                return;
+            }
+
             next(error);
         }
     };
@@ -154,11 +162,12 @@ export class AuthController {
      */
     login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
-            if (!req.body ||
-                z.object({
-                    email: z.string(),
-                    password: z.string()
-                }).safeParse(req.body).success === false) {
+            const UserSchema = z.object({
+                email: z.string(),
+                password: z.string()
+            })
+
+            if (!req.body || UserSchema.parse(req.body)) {
                 res.status(400).json({
                     message: "Email and password are required"
                 });
@@ -205,8 +214,15 @@ export class AuthController {
             });
         } catch (error) {
             console.error("Login error:", error);
-            res.status(500).json({
-                message: "Internal server error"
+            if (error instanceof ZodError) {
+                res.status(400).json({
+                    message: "Invalid data",
+                    errors: error.errors
+                });
+                return;
+            }
+            res.status(401).json({
+                message: "Invalid credentials"
             });
         }
     };
@@ -218,8 +234,11 @@ export class AuthController {
     verifyEmail = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const { token } = req.query;
+            const tokenCheck = z.object({
+                token: z.string().min(32).max(32)
+            })
 
-            if (!token || z.string().safeParse(token).success === false) {
+            if (!token || tokenCheck.parse(token)) {
                 res.status(400);
                 throw new Error("Token manquant");
             }
@@ -246,17 +265,25 @@ export class AuthController {
 
             res.status(200).json({ message: "Email vérifié avec succès" });
         } catch (error) {
+            if (error instanceof ZodError) {
+                res.status(400).json({
+                    message: "Invalid data",
+                    errors: error.errors
+                });
+                return;
+            }
             next(error);
         }
     };
 
     forgotPassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
-            // const { email } = req.body;
+            const { email } = req.body;
+            const emailSchema = z.object({
+                email: z.string().email()
+            })
 
-            if (!req.body || z.object({
-                email: z.string()
-            }).safeParse(req.body).success === false) {
+            if (!req.body || emailSchema.parse(email)) {
                 res.status(400).json({ message: "Email est requis." });
                 return;
             }
@@ -287,6 +314,13 @@ export class AuthController {
             res.status(200).json({ message: 'Email de réinitialisation envoyé avec succès.' });
         } catch (error) {
             console.error('Erreur lors de la demande de réinitialisation du mot de passe:', error);
+            if (error instanceof ZodError) {
+                res.status(400).json({
+                    message: "Invalid data",
+                    errors: error.errors
+                });
+                return;
+            }
             res.status(500).json({ message: 'Erreur lors de la demande de réinitialisation du mot de passe.' });
         }
     };
@@ -294,11 +328,12 @@ export class AuthController {
     resetPassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const { token, password } = req.body;
-
-            if (!token || !password || z.object({
-                token: z.string(),
+            const resetSchema = z.object({
+                token: z.string().min(32).max(32),
                 password: z.string()
-            }).safeParse(req.body).success === false) {
+            })
+
+            if (!token || !password || resetSchema.parse(req.body)) {
                 res.status(400).json({ message: 'Token et mot de passe sont requis.' });
                 return;
             }
@@ -324,6 +359,15 @@ export class AuthController {
             res.status(200).json({ message: 'Mot de passe réinitialisé avec succès.' });
         } catch (error) {
             console.error('Erreur lors de la réinitialisation du mot de passe:', error);
+
+            if (error instanceof ZodError) {
+                res.status(400).json({
+                    message: "Invalid data",
+                    errors: error.errors
+                });
+                return;
+            }
+
             res.status(500).json({ message: 'Erreur lors de la réinitialisation du mot de passe.' });
         }
     };

@@ -98,6 +98,7 @@ export class userSchema {
     }, {
       sequelize,
       modelName: 'User',
+      tableName: 'users',
       timestamps: true,
       defaultScope: {
         attributes: {

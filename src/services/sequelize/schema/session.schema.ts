@@ -60,6 +60,7 @@ export class sessionSchema {
     }, {
       sequelize,
       modelName: "Session",
+      tableName: "sessions",
       timestamps: true,
       underscored: true
     });
