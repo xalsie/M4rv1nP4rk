@@ -77,10 +77,7 @@ export class UserService {
     async findUserByVerificationToken(token: string): Promise<User | null> {
         const user = await this.model.findOne({
             where: {
-                emailVerificationToken: token,
-                emailVerificationTokenExpires: {
-                    $gt: new Date()
-                }
+                emailVerificationToken: token
             }
         });
 
@@ -90,10 +87,7 @@ export class UserService {
     async findUserByResetToken(token: string): Promise<User | null> {
         const user = await this.model.findOne({
             where: {
-                resetPasswordToken: token,
-                resetPasswordExpires: {
-                    $gt: new Date()
-                }
+                resetPasswordToken: token
             }
         });
 

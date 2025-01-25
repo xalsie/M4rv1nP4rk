@@ -14,7 +14,8 @@ const envSchema = z.object({
     DB_USER: z.string().default("myuser"),
     DB_PASSWORD: z.string().default("myPas$w0rd"),
     ALLOWED_ORIGINS: z.string().default("*"),
-    SECRET_KEY: z.string()
+    SECRET_KEY: z.string(),
+    MAIL_FROM: z.string().email().default("mail@marvinpark.com")
 });
 
 const _env = envSchema.safeParse(process.env);

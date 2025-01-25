@@ -4,7 +4,7 @@ import { sessionMiddleware } from "../middlewares/session.middleware";
 import validateCreateUser from "../middlewares/validator/validateUser";
 import { Bcrypt, generateResetToken } from "../utils";
 import { mailService } from "../services/mail.service";
-
+import { env } from "../env";
 import { SequelizeService } from "../services/sequelize";
 import { z, ZodError } from "zod"
 
@@ -22,25 +22,28 @@ export class AuthController {
      *           schema:
      *             type: object
      *             required:
-     *               - name
+     *               - firstname
+     *               - lastname
      *               - email
-     *               - tel
      *               - password
      *             properties:
+     *               firstname:
+     *                 type: string
+     *                 description: Prénom de l'utilisateur
+     *               lastname:
+     *                 type: string
+     *                 description: Nom de l'utilisateur
      *               email:
      *                 type: string
      *                 description: Email de l'utilisateur
-     *               tel:
-     *                 type: string
-     *                 description: telephone de l'utilisateur
      *               password:
      *                 type: string
      *                 description: Mot de passe de l'utilisateur
      *             example:
-     *               name: John Doe
+     *               firstname: John
+     *               lastname: Doe
      *               email: johndoe@example.com
-     *               tel: 0102030405
-     *               password: myPassword123
+     *               password: myP@ssword123
      *     responses:
      *       201:
      *         description: User registered successfully
@@ -49,12 +52,12 @@ export class AuthController {
      *             schema:
      *               type: object
      *               properties:
-     *                 token:
+     *                 response:
+     *                   type: boolean
+     *                   description: true
+     *                 message:
      *                   type: string
-     *                   description: JWT token de l'utilisateur
-     *                 email:
-     *                   type: string
-     *                   description: Email de l'utilisateur
+     *                   description: Un email de confirmation vous a été envoyé
      *       400:
      *         description: Bad request
      *       409:
@@ -67,11 +70,12 @@ export class AuthController {
             firstname: z.string().trim().min(3).max(50),
             lastname: z.string().trim().min(3).max(50),
             email: z.string().email(),
-            tel: z.string().optional(),
-            password: z.string()
+            password: z.string(),
+            tel: z.string().optional()
         })
         try {
-            if (!req.body || UserSchema.parse(req.body)) {
+            if (!req.body || UserSchema.safeParse(req.body)) {
+                console.log(req.body);
                 res.status(400).json({
                     message: "firstname, lastname, email and password are required"
                 });
@@ -90,7 +94,7 @@ export class AuthController {
                 firstName: req.body.firstname,
                 lastName: req.body.lastname,
                 email: req.body.email,
-                tel: req.body.tel,
+                tel: req.body.tel || null,
                 role: "ROLE_USER",
                 password: await bcryptInstance.hashPassword(req.body.password),
                 isEmailVerified: false,
@@ -106,7 +110,7 @@ export class AuthController {
                 template: 'confirmation',
                 data: {
                     username: user.firstName + ' ' + user.lastName || 'Utilisateur',
-                    confirmationLink: `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`
+                    confirmationLink: `${env.API_HOST}:${env.API_PORT}/api/auth/verify-email/${verificationToken}`
                 }
             });
 
@@ -151,10 +155,22 @@ export class AuthController {
      *                 description: Mot de passe de l'utilisateur
      *             example:
      *               email: johndoe@example.com
-     *               password: myPassword123
+     *               password: myP@ssword123
      *     responses:
-     *       200:
+     *       201:
      *         description: User logged in successfully and Session created
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 user:
+     *                   type: array
+     *                   items:
+     *                     $ref: '#/components/schemas/User'
+     *                 jwtToken:
+     *                   type: string
+     *                   description: JWT Token
      *       400:
      *         description: Invalid credentials
      *       404:
@@ -166,8 +182,8 @@ export class AuthController {
                 email: z.string(),
                 password: z.string()
             })
-
-            if (!req.body || UserSchema.parse(req.body)) {
+        
+            if (!req.body || UserSchema.safeParse(req.body).success === false) {
                 res.status(400).json({
                     message: "Email and password are required"
                 });
@@ -231,14 +247,47 @@ export class AuthController {
         res.json(req.session!.user);
     };
 
+    /**
+     * @swagger
+     * /api/auth/verify-email/{token}:
+     *  get:
+     *    summary: Verify user email
+     *    tags: [Auth]
+     *    parameters:
+     *      - in: path
+     *        name: token
+     *        schema:
+     *          type: string
+     *        required: true
+     *        description: Token de vérification
+     *    responses:
+     *      200:
+     *        description: Email vérifié avec succès
+     *        content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   description: Email vérifié avec succès
+     *      401:
+     *        description: Unauthorized
+     *      403:
+     *        description: Forbidden
+     *      404:
+     *        description: Not found
+     *      500:
+     *        description: Server error
+     */
     verifyEmail = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
-            const { token } = req.query;
-            const tokenCheck = z.object({
-                token: z.string().min(32).max(32)
-            })
+            const { token } = req.params;
+            const tokenCheck = z.string().min(64).max(64);
 
-            if (!token || tokenCheck.parse(token)) {
+            console.log(token);
+
+            if (!token || tokenCheck.safeParse(token).success === false) {
                 res.status(400);
                 throw new Error("Token manquant");
             }
@@ -276,6 +325,44 @@ export class AuthController {
         }
     };
 
+    /**
+     * @swagger
+     * /api/auth/forgot-password:
+     *   post:
+     *     summary: Request password reset
+     *     tags: [Auth]
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required:
+     *               - email
+     *             properties:
+     *               email:
+     *                 type: string
+     *                 description: Email de l'utilisateur
+     *             example:
+     *               email: johndoe@example.com
+     *     responses:
+     *       200:
+     *         description: Reset email sent successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   description: Email de réinitialisation envoyé avec succès.
+     *       400:
+     *         description: Bad request
+     *       404:
+     *         description: User not found
+     *       500:
+     *         description: Server error
+     */
     forgotPassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const { email } = req.body;
@@ -303,7 +390,8 @@ export class AuthController {
                 resetPasswordExpires: new Date(Date.now() + 3600000) // Token valide 1 heure
             });
 
-            const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+            // const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+            const resetLink = `${env.API_HOST}:${env.API_PORT}/api/auth/reset-password/${resetToken}`;
             await mailService.sendTemplatedEmail({
                 to: user.email,
                 subject: 'Réinitialisation de votre mot de passe',
@@ -325,11 +413,54 @@ export class AuthController {
         }
     };
 
+    /**
+     * @swagger
+     * /api/auth/reset-password:
+     *   post:
+     *     summary: Reset user password
+     *     tags: [Auth]
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required:
+     *               - token
+     *               - password
+     *             properties:
+     *               token:
+     *                 type: string
+     *                 description: Token de réinitialisation
+     *               password:
+     *                 type: string
+     *                 description: Nouveau mot de passe
+     *             example:
+     *               token: a1b2c3d4e5f6...
+     *               password: newSecurePassword123
+     *     responses:
+     *       200:
+     *         description: Password reset successful
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   description: Mot de passe réinitialisé avec succès.
+     *       400:
+     *         description: Invalid token or password
+     *       404:
+     *         description: Token not found
+     *       500:
+     *         description: Server error
+     */
     resetPassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const { token, password } = req.body;
             const resetSchema = z.object({
-                token: z.string().min(32).max(32),
+                token: z.string().min(64).max(64),
                 password: z.string()
             })
 
@@ -377,7 +508,7 @@ export class AuthController {
         router.post("/register", validateCreateUser, this.register);
         router.post("/login", this.login);
         router.get("/me", sessionMiddleware(), this.me);
-        router.get("/verify-email", this.verifyEmail);
+        router.get("/verify-email/:token", this.verifyEmail);
         router.post("/forgot-password", this.forgotPassword);
         router.post("/reset-password", this.resetPassword);
         return router;

@@ -1,10 +1,8 @@
 import { NextFunction, Request, Response, Router } from "express";
 import { authenticateToken } from "../middlewares/jwt";
-import { validateObjectId } from "../middlewares/validate";
-import {
-  validateRole
-} from "../middlewares/validator/validateRole";
+import { validateRole } from "../middlewares";
 import { SequelizeService } from "../services/sequelize/sequelize.service";
+import { z } from "zod";
 
 export class UserController {
   /**
@@ -40,19 +38,22 @@ export class UserController {
    */
   async getOneUser(req: Request, res: Response, next: NextFunction) {
     try {
-      // if (!req.params.id) {
+      const { id } = req.params;
+      const idSchema = z.number().positive().int();
+
+      if (!id || idSchema.safeParse(id).success === false) {
         res.status(400);
-      //   throw new Error("Missing id parameter");
-      // }
-      // const sequelizeService = await SequelizeService.get();
-      // const user = await sequelizeService.userService.findUserById(
-      //   req.params.id
-      // );
-      // if (!user) {
-      //   res.status(404);
-      //   throw new Error("User not found");
-      // }
-      // res.status(200).json(user);
+        throw new Error("Missing id parameter");
+      }
+      const sequelizeService = await SequelizeService.get();
+      const user = await sequelizeService.userService.findUserById(
+        req.params.id
+      );
+      if (!user) {
+        res.status(404);
+        throw new Error("User not found");
+      }
+      res.status(200).json(user);
       return;
     } catch (error) {
       if (!res.statusCode) {
@@ -88,7 +89,6 @@ export class UserController {
    */
   async getUsers(req: Request, res: Response, next: NextFunction) {
     try {
-      // const sequelizeService = await SequelizeService.get();
       const sequelizeService = await SequelizeService.get();
       const users = await sequelizeService.userService.findAllUsers();
       if (!users) {
@@ -123,21 +123,16 @@ export class UserController {
    *       content:
    *         application/json:
    *           schema:
-   *             type: object
-   *             properties:
-   *               name:
-   *                 type: string
-   *                 description: Nom de l'utilisateur
-   *               email:
-   *                 type: string
-   *                 description: Email de l'utilisateur
-   *               password:
-   *                 type: string
-   *                 description: Mot de passe de l'utilisateur
+   *             type: array
+   *             items:
+   *               $ref: '#/components/schemas/User'
+   *               required: true
    *             example:
-   *               name: John Doe
-   *               email: johndoe@example.com
-   *               password: myPassword123
+   *               firstName: John
+   *               lastName: Doe
+   *               tel: 0102030405
+   *               email: john.doe@toto.com
+   *               role: ROLE_USER
    *     responses:
    *       200:
    *         description: User successfully updated
@@ -158,20 +153,32 @@ export class UserController {
    */
   async updateUser(req: Request, res: Response, next: NextFunction) {
     try {
-      // if (!req.params.id || !req.body) {
+      const id = parseInt(req.params.id);
+      const idSchema = z.number().positive().int();
+      const userSchema = z.object({
+        firstName: z.string().min(3).max(50).optional(),
+        lastName: z.string().min(3).max(50).optional(),
+        tel: z.string().optional(),
+        email: z.string().email().optional(),
+        role: z.string().optional(),
+      });
+
+      if (!id || idSchema.safeParse(id).success === false ||
+        !req.body || userSchema.safeParse(req.body).success === false) {
         res.status(400);
-      //   throw new Error("Missing id parameter or body");
-      // }
-      // const sequelizeService = await SequelizeService.get();
-      // const user = await sequelizeService.userService.updateUser(
-      //   req.params.id,
-      //   req.body
-      // );
-      // if (!user) {
-      //   res.status(404);
-      //   throw new Error("User not found");
-      // }
-      // res.status(200).json(user);
+        throw new Error("Missing id parameter or body");
+      }
+
+      const sequelizeService = await SequelizeService.get();
+      const user = await sequelizeService.userService.updateUser(
+        id,
+        req.body
+      );
+      if (!user) {
+        res.status(404);
+        throw new Error("User not found");
+      }
+      res.status(200).json(user);
       return;
     } catch (error) {
       if (!res.statusCode) {
@@ -216,17 +223,20 @@ export class UserController {
    */
   async deleteUser(req: Request, res: Response, next: NextFunction) {
     try {
-      // if (!req.params.id) {
+      const id = parseInt(req.params.id);
+      const idSchema = z.number().positive().int();
+
+      if (!id || idSchema.safeParse(id).success === false) {
         res.status(400);
-      //   throw new Error("Missing id parameter");
-      // }
-      // const sequelizeService = await SequelizeService.get();
-      // const user = await sequelizeService.userService.deleteUser(req.params.id);
-      // if (!user) {
-      //   res.status(404);
-      //   throw new Error("User not found");
-      // }
-      // res.status(200).json(user);
+        throw new Error("Missing id parameter");
+      }
+      const sequelizeService = await SequelizeService.get();
+      const user = await sequelizeService.userService.deleteUser(id);
+      if (!user) {
+        res.status(404);
+        throw new Error("User not found");
+      }
+      res.status(200).json(user);
       return;
     } catch (error) {
       if (!res.statusCode) {
@@ -241,27 +251,25 @@ export class UserController {
     router.get(
       "/:id",
       authenticateToken,
-      validateRole.bind(["ROLE_ADMIN"]),
+      validateRole.bind(this, ["ROLE_ADMIN"]),
       this.getOneUser.bind(this)
     );
     router.get(
       "/",
       authenticateToken,
-      validateRole.bind(["ROLE_ADMIN"]),
+      validateRole.bind(this, ["ROLE_ADMIN"]),
       this.getUsers.bind(this)
     );
     router.put(
       "/:id",
       authenticateToken,
-      validateRole.bind(["ROLE_ADMIN", "ROLE_USER"]),
-      validateObjectId,
+      validateRole.bind(this, ["ROLE_ADMIN", "ROLE_USER"]),
       this.updateUser.bind(this)
     );
     router.delete(
       "/:id",
       authenticateToken,
-      validateRole.bind(["ROLE_ADMIN", "ROLE_USER"]),
-      validateObjectId,
+      validateRole.bind(this, ["ROLE_ADMIN", "ROLE_USER"]),
       this.deleteUser.bind(this)
     );
     return router;

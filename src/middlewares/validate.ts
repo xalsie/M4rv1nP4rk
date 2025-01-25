@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from "express";
 import { validationResult } from "express-validator";
-// import mongoose from "mongoose";
 
 // Vérifier que les données envoyées sont valides
 const validate = (req: Request, res: Response, next: NextFunction) => {
@@ -19,15 +18,6 @@ const validateNoToken = (req: Request, res: Response, next: NextFunction) => {
     res.status(401);
     throw new Error("You are already logged in");
   }
-  next();
-};
-
-const validateObjectId = (req: Request, res: Response, next: Function) => {
-  const id = req.params.id || req.params.userId || req.params.productId;
-  // if (!mongoose.Types.ObjectId.isValid(id)) {
-  //   res.status(401);
-  //   throw new Error("Invalid ID format");
-  // }
   next();
 };
 
@@ -108,6 +98,5 @@ const validateAttributeAndValue = (
 export {
   validate,
   validateAttributeAndValue,
-  validateNoToken,
-  validateObjectId,
+  validateNoToken
 };

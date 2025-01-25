@@ -8,12 +8,17 @@ import { User, Session } from "../../../models";
  *     User:
  *       type: object
  *       required:
+ *         - firstname
+ *         - lastName
  *         - email
  *         - password
  *       properties:
- *         name:
+ *         firstname:
  *           type: string
  *           description: Le nom de l'utilisateur
+ *         lastName:
+ *           type: string
+ *           description: Le prénom de l'utilisateur
  *         email:
  *           type: string
  *           description: L'email de l'utilisateur
@@ -29,7 +34,8 @@ import { User, Session } from "../../../models";
  *           default: ROLE_USER
  *           description: Le rôle de l'utilisateur
  *       example:
- *         name: John Doe
+ *         firstname: John
+ *         lastName: Doe
  *         email: john.doe@toto.com
  *         tel: 0102030405
  *         password: password

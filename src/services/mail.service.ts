@@ -1,12 +1,11 @@
 import nodemailer from 'nodemailer';
+import { env } from '../env';
 import { Mail, MailData } from '../models/mail.model';
 import { emailTemplates } from '../templates/emailTemplates';
 
 type EmailTemplate = {
     confirmation: (username: string, confirmationLink: string) => string;
     passwordReset: (resetLink: string) => string;
-    invoice: (username: string, invoiceLink: string) => string;
-    orderConfirmation: (username: string, orderNumber: string, orderDetails: string) => string;
 };
 
 type TemplateData = {
@@ -16,15 +15,6 @@ type TemplateData = {
     };
     passwordReset: {
         resetLink: string;
-    };
-    invoice: {
-        username: string;
-        invoiceLink: string;
-    };
-    orderConfirmation: {
-        username: string;
-        orderNumber: string;
-        orderDetails: string;
     };
 };
 
@@ -47,7 +37,7 @@ class MailService {
             ignoreTLS: true
         });
 
-        this.defaultFrom = process.env.MAIL_FROM || 'pokeshop@gmail.com';
+        this.defaultFrom = env.MAIL_FROM;
     }
 
     async sendEmail(mailData: MailData): Promise<void> {
@@ -75,14 +65,6 @@ class MailService {
             case 'passwordReset':
                 const { resetLink } = options.data as TemplateData['passwordReset'];
                 htmlContent = emailTemplates.passwordReset(resetLink);
-                break;
-            case 'invoice':
-                const { username: invUsername, invoiceLink } = options.data as TemplateData['invoice'];
-                htmlContent = emailTemplates.invoice(invUsername, invoiceLink);
-                break;
-            case 'orderConfirmation':
-                const { username: orderUsername, orderNumber, orderDetails } = options.data as TemplateData['orderConfirmation'];
-                htmlContent = emailTemplates.orderConfirmation(orderUsername, orderNumber, orderDetails);
                 break;
             default:
                 throw new Error('Template non reconnu');

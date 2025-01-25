@@ -13,7 +13,7 @@ const configureCORS = (app: Application) => {
 
       const allowedOrigins = env.ALLOWED_ORIGINS;
       const origins = allowedOrigins.split(" ");
-      if (origins.indexOf(origin) !== -1) {
+      if (allowedOrigins === "*" || origins.indexOf(origin) !== -1) {
         callback(null, true);
       } else {
         callback(new Error("Request from unauthorized origin"));
