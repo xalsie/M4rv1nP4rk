@@ -11,8 +11,6 @@ export class RoomEquipmentController {
      *   post:
      *     summary: Associate equipment to a room
      *     tags: [RoomEquipments]
-     *     security:
-     *       - bearerAuth: []
      *     requestBody:
      *       required: true
      *       content:
@@ -55,94 +53,6 @@ export class RoomEquipmentController {
             const roomEquipment = await sequelizeService.roomEquipmentService.createRoomEquipment(req.body);
 
             res.status(201).json(roomEquipment);
-            return;
-        } catch (error) {
-            if (!res.statusCode) res.status(500);
-            next(error);
-        }
-    }
-
-    /**
-     * @swagger
-     * /api/room-equipments/room/{roomId}:
-     *   get:
-     *     summary: Get all equipment in a room
-     *     tags: [RoomEquipments]
-     *     parameters:
-     *       - in: path
-     *         name: roomId
-     *         required: true
-     *         schema:
-     *           type: integer
-     *     responses:
-     *       200:
-     *         description: List of equipment in room
-     *       404:
-     *         description: No equipment found
-     */
-    async getEquipmentsByRoom(req: Request, res: Response, next: NextFunction) {
-        try {
-            const roomId = parseInt(req.params.roomId);
-            const idSchema = z.number().positive().int();
-
-            if (!roomId || !idSchema.safeParse(roomId).success) {
-                res.status(400);
-                throw new Error("Invalid room ID");
-            }
-
-            const sequelizeService = await SequelizeService.get();
-            const equipments = await sequelizeService.roomEquipmentService.findEquipmentsByRoomId(roomId);
-
-            if (!equipments) {
-                res.status(404);
-                throw new Error("No equipment found in this room");
-            }
-
-            res.status(200).json(equipments);
-            return;
-        } catch (error) {
-            if (!res.statusCode) res.status(500);
-            next(error);
-        }
-    }
-
-    /**
-     * @swagger
-     * /api/room-equipments/equipment/{equipmentId}:
-     *   get:
-     *     summary: Get all rooms containing specific equipment
-     *     tags: [RoomEquipments]
-     *     parameters:
-     *       - in: path
-     *         name: equipmentId
-     *         required: true
-     *         schema:
-     *           type: integer
-     *     responses:
-     *       200:
-     *         description: List of rooms containing equipment
-     *       404:
-     *         description: Equipment not found in any room
-     */
-    async getRoomsByEquipment(req: Request, res: Response, next: NextFunction) {
-        try {
-            const equipmentId = parseInt(req.params.equipmentId);
-            const idSchema = z.number().positive().int();
-
-            if (!equipmentId || !idSchema.safeParse(equipmentId).success) {
-                res.status(400);
-                throw new Error("Invalid equipment ID");
-            }
-
-            const sequelizeService = await SequelizeService.get();
-            const rooms = await sequelizeService.roomEquipmentService.findRoomsByEquipmentId(equipmentId);
-
-            if (!rooms) {
-                res.status(404);
-                throw new Error("Equipment not found in any room");
-            }
-
-            res.status(200).json(rooms);
             return;
         } catch (error) {
             if (!res.statusCode) res.status(500);
@@ -201,18 +111,6 @@ export class RoomEquipmentController {
             authenticateToken,
             validateRole.bind(this, ["ROLE_ADMIN"]),
             this.createRoomEquipment.bind(this)
-        );
-        router.get(
-            "/room/:roomId",
-            authenticateToken,
-            validateRole.bind(this, ["ROLE_USER", "ROLE_ADMIN"]),
-            this.getEquipmentsByRoom.bind(this)
-        );
-        router.get(
-            "/equipment/:equipmentId",
-            authenticateToken,
-            validateRole.bind(this, ["ROLE_USER", "ROLE_ADMIN"]),
-            this.getRoomsByEquipment.bind(this)
         );
         router.delete(
             "/:id",

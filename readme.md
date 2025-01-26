@@ -20,3 +20,13 @@ docker-compose up --build
 4.	Scalabilité :
  - API modulable et évolutive pour intégrer des fonctionnalités futures.
  - Documentation claire Swagger
+
+### Add a new seed file
+```bash
+npx sequelize-cli seed:generate --name authors
+```
+
+#### Run the seed file
+```bash
+npx sequelize-cli db:seed:all
+```

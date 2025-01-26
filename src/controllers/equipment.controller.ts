@@ -11,8 +11,6 @@ export class EquipmentController {
      *   post:
      *     summary: Create a new equipment
      *     tags: [Equipments]
-     *     security:
-     *       - bearerAuth: []
      *     requestBody:
      *       required: true
      *       content:
@@ -22,7 +20,8 @@ export class EquipmentController {
      *             required:
      *               - name
      *               - description
-     *               - roomId
+     *               - status
+     *               - serialNumber 
      *             properties:
      *               name:
      *                 type: string
@@ -30,13 +29,17 @@ export class EquipmentController {
      *               description:
      *                 type: string
      *                 description: Description of the equipment
-     *               roomId:
-     *                 type: integer
-     *                 description: ID of the room where the equipment is located
+     *               status:
+     *                 type: string
+     *                 description: Status of the equipment
+     *               serialNumber:
+     *                 type: string
+     *                 description: Serial number of the equipment
      *             example:
      *               name: "Tapis de course"
      *               description: "Tapis de course professionnel"
-     *               roomId: 1
+     *               status: "DISPONIBLE"
+     *               serialNumber: "123456789"
      *     responses:
      *       201:
      *         description: Equipment created successfully
@@ -167,8 +170,6 @@ export class EquipmentController {
      *                 type: string
      *               description:
      *                 type: string
-     *               roomId:
-     *                 type: integer
      *     responses:
      *       200:
      *         description: Equipment updated successfully

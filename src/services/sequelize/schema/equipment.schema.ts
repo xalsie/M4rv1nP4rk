@@ -79,17 +79,6 @@ export class equipmentSchema {
             timestamps: true
         });
 
-        // Equipment.belongsToMany(Room, {
-        //     through: 'RoomEquipment',
-        //     foreignKey: 'equipmentId',
-        //     otherKey: 'roomId'
-        // });
-
-        Equipment.belongsTo(Room, {
-            foreignKey: 'roomId',
-            targetKey: 'id'
-        });
-
         Equipment.sync().then(() => {
             console.log('Table des équipements synchronisée');
         });

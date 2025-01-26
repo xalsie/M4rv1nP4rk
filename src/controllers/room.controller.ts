@@ -11,8 +11,6 @@ export class RoomController {
      *   post:
      *     summary: Create a new training room
      *     tags: [Rooms]
-     *     security:
-     *       - bearerAuth: []
      *     requestBody:
      *       required: true
      *       content:
