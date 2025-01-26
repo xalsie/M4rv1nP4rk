@@ -126,7 +126,6 @@ export class UserController {
    *             type: array
    *             items:
    *               $ref: '#/components/schemas/User'
-   *               required: true
    *             example:
    *               firstName: John
    *               lastName: Doe

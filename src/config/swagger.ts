@@ -59,8 +59,8 @@ const swaggerOptions: SwaggerOptions = {
   },
   apis: [
     "src/controllers/*.ts",
-    "src/services/sequelize/schema/session.schema.ts",
-    "src/services/sequelize/schema/user.schema.ts",
+    "src/services/sequelize/schema/*.schema.ts",
+    // "src/services/sequelize/schema/user.schema.ts",
   ],
 };
 

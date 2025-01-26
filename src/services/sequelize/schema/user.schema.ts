@@ -1,5 +1,5 @@
 import { Sequelize, DataTypes } from "sequelize";
-import { User, Session } from "../../../models";
+import { User, UserRoom, Session, Room } from "../../../models";
 
 /**
  * @swagger
@@ -121,9 +121,14 @@ export class userSchema {
       }
     });
 
+    // User.belongsToMany(Room, {
+    //   through: UserRoom,
+    //   foreignKey: 'userId',
+    //   otherKey: 'roomId'
+    // });
+
     // User.hasMany(Session, {
-    //   foreignKey: 'user',
-    //   sourceKey: 'id'
+    //   foreignKey: 'user'
     // });
 
     User.sync().then(() => {

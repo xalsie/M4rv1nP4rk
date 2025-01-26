@@ -15,7 +15,8 @@ import errorHandler from "./middlewares/errorHandler";
 import {
     Swagger,
     AuthController,
-    UserController
+    UserController,
+    RoomController
 } from "./controllers";
 
 const app: Express = express();
@@ -57,6 +58,9 @@ app.use("/api/auth", authController.buildRouter());
 
 const userController = new UserController();
 app.use("/api/users", userController.buildRouter());
+
+const roomController = new RoomController();
+app.use("/api/rooms", roomController.buildRouter());
 
 // Middleware d'erreurs global
 app.use(errorHandler(logger));

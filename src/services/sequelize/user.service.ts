@@ -1,4 +1,4 @@
-import { Model, ModelStatic, InferAttributes, InferCreationAttributes } from "sequelize";
+import { Model, ModelStatic } from "sequelize";
 import { SequelizeService } from "./sequelize.service";
 import { User, UserCreation } from "../../models";
 import { userSchema } from "./schema";
@@ -17,12 +17,12 @@ export class UserService {
     }
 
     // register
-    async createUser(user: UserCreation): Promise<User> {
+    async createUser(user: UserCreation): Promise<User | null> {
         const res = await this.model.create(user, {
             returning: true
         });
 
-        return res.dataValues;
+        return res?.dataValues || null;
     }
 
     // login

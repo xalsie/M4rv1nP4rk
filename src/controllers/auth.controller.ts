@@ -104,6 +104,11 @@ export class AuthController {
                 resetPasswordExpires: null
             });
 
+            if (!user) {
+                res.status(500).end();
+                return;
+            }
+
             await mailService.sendTemplatedEmail({
                 to: user.email,
                 subject: 'Confirme ton inscription',
