@@ -1,5 +1,39 @@
 import { Sequelize, DataTypes } from "sequelize";
-import { RoomEquipment } from "../../../models";
+import { RoomEquipment, Room, Equipment } from "../../../models";
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     RoomEquipment:
+ *       type: object
+ *       required:
+ *         - roomId
+ *         - equipmentId
+ *         - quantity
+ *       properties:
+ *         roomId:
+ *           type: integer
+ *           description: The ID of the room
+ *         equipmentId:
+ *           type: integer
+ *           description: The ID of the equipment
+ *         quantity:
+ *           type: integer
+ *           description: The quantity of the equipment
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ *       example:
+ *         roomId: 1
+ *         equipmentId: 1
+ *         quantity: 2
+ *         createdAt: 2021-09-01T00:00:00.000Z
+ *         updatedAt: 2021-09-01T00:00:00.000Z
+ */
 
 export class roomEquipmentSchema {
     constructor(sequelize: Sequelize) {
@@ -21,7 +55,7 @@ export class roomEquipmentSchema {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 references: {
-                    model: 'equipment',
+                    model: 'equipments',
                     key: 'id'
                 }
             },
@@ -43,6 +77,16 @@ export class roomEquipmentSchema {
             modelName: 'RoomEquipment',
             tableName: 'room_equipment',
             timestamps: true
+        });
+
+        RoomEquipment.belongsTo(Room, {
+            foreignKey: 'roomId',
+            targetKey: 'id'
+        });
+
+        RoomEquipment.belongsTo(Equipment, {
+            foreignKey: 'equipmentId',
+            targetKey: 'id'
         });
 
         RoomEquipment.sync().then(() => {

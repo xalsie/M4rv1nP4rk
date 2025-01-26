@@ -16,7 +16,9 @@ import {
     Swagger,
     AuthController,
     UserController,
-    RoomController
+    RoomController,
+    EquipmentController,
+    RoomEquipmentController
 } from "./controllers";
 
 const app: Express = express();
@@ -61,6 +63,12 @@ app.use("/api/users", userController.buildRouter());
 
 const roomController = new RoomController();
 app.use("/api/rooms", roomController.buildRouter());
+
+const equipmentController = new EquipmentController();
+app.use("/api/equipments", equipmentController.buildRouter());
+
+const roomEquipmentController = new RoomEquipmentController();
+app.use("/api/room-equipments", roomEquipmentController.buildRouter());
 
 // Middleware d'erreurs global
 app.use(errorHandler(logger));

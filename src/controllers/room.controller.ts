@@ -94,17 +94,55 @@ export class RoomController {
      *         schema:
      *           type: integer
      *         description: Room ID
-     *   responses:
-     *     200:
-     *       description: Room found
-     *       content:
-     *         application/json:
-     *           schema:
-     *             type: array
-     *             items:
-     *               $ref: '#/components/schemas/Room'
-     *     404:
-     *       description: Room not found
+     *     responses:
+     *       200:
+     *         description: Room found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 id:
+     *                   type: integer
+     *                 name:
+     *                   type: string
+     *                 capacity:
+     *                   type: integer
+     *                 managerId:
+     *                   type: integer
+     *                 equipments:
+     *                   type: object
+     *                   properties:
+     *                     id:
+     *                       type: integer
+     *                     name:
+     *                       type: string
+     *                     description:
+     *                       type: string
+     *                     status:
+     *                       type: string
+     *                     serialNumber:
+     *                       type: string
+     *                     createdAt:
+     *                       type: string
+     *                       format: date-time
+     *                     updatedAt:
+     *                       type: string
+     *                       format: date-time
+     *                 createdAt:
+     *                   type: string
+     *                   format: date-time
+     *                 updatedAt:
+     *                   type: string
+     *                   format: date-time   
+     *       401:
+     *         description: Unauthorized
+     *       403:
+     *         description: Forbidden
+     *       404:
+     *         description: Not found
+     *       500:
+     *         description: Server error
      */
     async getRoom(req: Request, res: Response, next: NextFunction) {
         try {
@@ -146,9 +184,41 @@ export class RoomController {
      *        content:
      *          application/json:
      *            schema:
-     *              type: array
-     *              items:
-     *                $ref: '#/components/schemas/Room'
+     *              type: object
+     *              properties:
+     *                id:
+     *                  type: integer
+     *                name:
+     *                  type: string
+     *                capacity:
+     *                  type: integer
+     *                managerId:
+     *                  type: integer
+     *                equipments:
+     *                  type: object
+     *                  properties:
+     *                    id:
+     *                      type: integer
+     *                    name:
+     *                      type: string
+     *                    description:
+     *                      type: string
+     *                    status:
+     *                      type: string
+     *                    serialNumber:
+     *                      type: string
+     *                    createdAt:
+     *                      type: string
+     *                      format: date-time
+     *                    updatedAt:
+     *                      type: string
+     *                      format: date-time
+     *                createdAt:
+     *                  type: string
+     *                  format: date-time
+     *                updatedAt:
+     *                  type: string
+     *                  format: date-time   
      *      401:
      *        description: Unauthorized
      *      403:

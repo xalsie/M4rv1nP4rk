@@ -3,6 +3,8 @@ import { Sequelize, Dialect } from "sequelize";
 import { UserService } from "./user.service";
 import { SessionService } from "./session.service";
 import { RoomService } from "./room.service";
+import { EquipmentService } from "./equipment.service";
+import { RoomEquipmentService } from "./room_equipment.service";
 
 export class SequelizeService {
   private static instance?: SequelizeService;
@@ -11,12 +13,16 @@ export class SequelizeService {
   readonly userService: UserService;
   readonly sessionService: SessionService;
   readonly roomService: RoomService;
+  readonly equipmentService: EquipmentService;
+  readonly roomEquipmentService: RoomEquipmentService;
 
   private constructor(sequelize: Sequelize) {
     this.sequelize = sequelize;
     this.userService = new UserService(this);
     this.sessionService = new SessionService(this);
     this.roomService = new RoomService(this);
+    this.equipmentService = new EquipmentService(this);
+    this.roomEquipmentService = new RoomEquipmentService(this);
   }
 
   public static async get(): Promise<SequelizeService> {

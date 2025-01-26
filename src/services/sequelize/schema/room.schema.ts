@@ -5,7 +5,7 @@ import { User, Room, Equipment, RoomEquipment } from "../../../models";
  * @swagger
  * components:
  *   schemas:
- *     Room:
+ *     Rooms:
  *       type: object
  *       required:
  *         - name
@@ -80,24 +80,9 @@ export class roomSchema {
         //     otherKey: 'equipmentId'
         // });
 
-
-
-        // has many equipments
-        // Room.hasMany(Equipment, {
+        // Room.hasMany(RoomEquipment, {
         //     foreignKey: 'roomId',
-        //     sourceKey: 'id'
-        // });
-
-        // has many characteristics
-        // Room.hasMany(Characteristic, {
-        //     foreignKey: 'roomId',
-        //     sourceKey: 'id'
-        // });
-
-        // has many exercise types
-        // Room.hasMany(ExerciseType, {
-        //     foreignKey: 'roomId',
-        //     sourceKey: 'id'
+        //     as: 'roomEquipments'
         // });
 
         Room.sync().then(() => {

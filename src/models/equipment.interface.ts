@@ -5,7 +5,6 @@ export interface IEquipment {
     name: string;
     description: string;
     status: string;
-    stock: number;
     serialNumber: string;
     createdAt: Date;
     updatedAt: Date;
@@ -17,7 +16,6 @@ export class Equipment extends Model<IEquipment, EquipmentCreation> {
     declare id: number;
     declare name: string;
     declare description: string;
-    declare stock: number;
     declare status: string;
     declare serialNumber: string;
     declare createdAt: Date;
